@@ -1,0 +1,24 @@
+{
+	"name": "trello-oauth",
+	"repository": "trello-oauth",
+	"version": "0.0.1",
+	"description": "Example app to demonstrate using OAuth with Trello's API!",
+	"main": "server.js",
+	"scripts": {
+		"start": "node server.js"
+	},
+	"dependencies": {
+		"express": "^4.15.2",
+		"oauth": "^0.9.15",
+		"http": "^0.0.0",
+		"url": "0.11.0"
+	},
+	"keywords": [
+		"node",
+		"express"
+	],
+	"engines": {
+		"node": "10"
+	},
+	"license": "MIT"
+}
