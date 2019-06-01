@@ -36,7 +36,7 @@ const load_content = (trelloUser) => {
                 </Container>
 
                 <Select name="boardSelect" value="selectedValue" action="change-board">
-                    ${trelloUser.map(board => mapBoards(board))}
+                    Board to use: ${trelloUser.map(board => mapBoards(board))}
                 </Select>
             </Box>
 
