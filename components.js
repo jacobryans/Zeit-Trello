@@ -14,7 +14,7 @@ const authenticate = () => {
                         <Img width="40%" height="80px" src="https://d2k1ftgv7pobq7.cloudfront.net/meta/u/res/images/brand-assets/Logos/0099ec3754bf473d2bbf317204ab6fea/trello-logo-blue.png" />
                         <P width="100%"> Welcome to the Zeit Trello Integration! Click the "Fetch Trello" button below to get started. </P>
                         <Box width="100%" textAlign="center" marginBottom="20px">
-                            <Link target="_blank" href="https://trello.com/1/authorize?expiration=never&name=MyPersonalToken&scope=read&response_type=token&key=e586378fdc0f7152e1d0efa486b7a346">
+                            <Link target="_blank" href="https://trello.com/1/authorize?expiration=never&name=MyPersonalToken&scope=read,write&response_type=token&key=e586378fdc0f7152e1d0efa486b7a346">
                                 Click here to get your token.
                             </Link>
                         </Box>
@@ -32,6 +32,7 @@ const authenticate = () => {
 }
 
 const load_content = (zeitUser, metadata) => {
+    console.log(metadata.trelloBoards);
     let selectedBoard = metadata.trelloBoards.filter(board => metadata.selected === board.id);
     let selectComponent = htm`<Option value="" caption="${selectedBoard[0].name}" selected />`;
     return htm`
@@ -62,10 +63,10 @@ const load_content = (zeitUser, metadata) => {
             ${ metadata.trelloLists && 
                 metadata.trelloLists.map(list => { 
                     return htm`<Box width="150px" padding="5px" margin="5px" borderRadius="5px" border="1px solid #a9a9aa">
-                   <Container>
+                    <Container>
                         ${list.name}
                         <Button width="5%" height="5px" fontSize="8px" value="test" action="open-list-${encodeURIComponent(`open-list-${list.id}`)}"> Use this List </Button>
-                   </Container>
+                    </Container>
                 </Box>`
                 })
             }
@@ -74,7 +75,8 @@ const load_content = (zeitUser, metadata) => {
     `;
 }
 
-const load_list = (zeitUser, metadata, trelloCards ) => {
+const load_list = (zeitUser, metadata ) => {
+    console.log(metadata.trelloCards);
     return htm`
     <Page >
         <Box height="600px" width="100%" border="1px solid #a9a9aa" padding="5px" height="50px" display="flex" justifyContent="flex-start" border-radius="5px" alignItems="center"> 
@@ -84,23 +86,52 @@ const load_list = (zeitUser, metadata, trelloCards ) => {
         </Box>
 
         <Box width="100%" display="flex" padding="5px" margin="5px" border="1px solid #a9a9aa" justifyContent="space-between" flexWrap="wrap">
-            <Box width="50%" display="flex" flex-direction="column">
-            ${ trelloCards && 
-                trelloCards.map(card => {
-                    return htm`<Box width="100%" border="1px solid #a9a9aa" margin="5px 0 0 0" borderRadius="5px" padding="3px">
-                        <P>${card.name}</P>
+            <Box width="50%" display="flex" flex-direction="row" flexWrap="wrap">
+                <Box width="45%" height="130px" border="1px solid #a9a9aa" margin="5px 0 0 0" borderRadius="5px" padding="3px" fontSize="8px" fontWeight="bold">
+                    <Button height="30px" small action="add_card">ADD CARD</Button>
+                </Box>
+            ${ metadata.trelloCards && 
+                metadata.trelloCards.map(card => {
+                    return htm`<Box width="45%" height="130px" border="1px solid #a9a9aa" margin="5px 0 0 0" borderRadius="5px" padding="3px" fontSize="8px" fontWeight="bold">
+                        <P>${card.name.substring(0,30) + "..."}</P>
+                        <Button small action="open-card-${encodeURIComponent(`open-card-${card.id}`)}">Select</Button>
                     </Box>` 
                 })
             }
             </Box>
             <Box width="50%" display="flex">
-                ACTION PANEL
+                ${action_panel(zeitUser, metadata)}
             </Box>
         </Box>
     </Page>
     `;
 }
 
+const action_panel = (zeitUser, metadata) => {
+    if(zeitUser.action==="add_card") {
+        return   htm`
+                    <Box>
+                        <Input name="new_card_name" label="New Card Name" value="" />
+                        <Input name="new_card_desc" label="New Card Description" value="" />
+                        <Button action="add_card">Add Card</Button>
+                    </Box>
+                `;
+    }
+    return htm`
+        <Box width="100%">
+            <P>Name - ${metadata.currentCard.name}</P>
+            <P>Description - ${metadata.currentCard.desc}</P>
+            <P>Content</P>
+            <P>Content</P>
+            <P>Content</P>
+            <Box>
+                <Input name="edit_card_name" label="Card Name" value="${metadata.currentCard.name}" />
+                <Input name="edit_card_desc" label="Card Description" value="${metadata.currentCard.desc}" />
+                <Button action="edit_card">SAVE CARD</Button>
+            </Box>
+        </Box>
+    `;
+}
 
 module.exports = {
     authenticate, load_content, load_list
