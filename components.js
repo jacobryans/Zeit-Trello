@@ -1,4 +1,8 @@
 const { htm } = require('@zeit/integration-utils');
+const axios = require('axios');
+const axiosWithAuth = require('./axiosAuth');
+
+{/* <Option value="" caption=${findBoard(metadata, zeitUser)} /> */}
 
 const authenticate = () => {
     return htm`
@@ -27,35 +31,77 @@ const authenticate = () => {
     `
 }
 
-const load_content = (trelloUser) => {
+const load_content = (zeitUser, metadata) => {
+    let selectedBoard = metadata.trelloBoards.filter(board => metadata.selected === board.id);
+    let selectComponent = htm`<Option value="" caption="${selectedBoard[0].name}" selected />`;
     return htm`
         <Page>
-            <Box width="100%" padding="5px" height="30px" display="flex" justifyContent="space-between"> 
-                <Container>
-                    Hi Username
+            <Box width="100%" border="1px solid #a9a9aa" padding="5px" height="50px" display="flex" justifyContent="space-between" border-radius="5px" alignItems="center"> 
+                <Container display="flex" height="100%" align-items="center">
+                    Hello, ${zeitUser.user.username}
                 </Container>
 
-                <Select name="boardSelect" value="selectedValue" action="change-board">
-                    Board to use: ${trelloUser.map(board => mapBoards(board))}
-                </Select>
+                <Container>
+                    Board to use: 
+                    <Select name="boardSelect" value="selectedValue" action="changeBoard">
+                        ${selectComponent}
+                        ${metadata.trelloBoards.map(board => { 
+                            if(selectedBoard[0].id !== board.id) {
+                                return htm`<Option value="${board.id}" caption="${board.name}"/>`
+                            } else {
+                                return;
+                            }
+                        }
+                        )}
+                    </Select>
+                </Container>
             </Box>
 
-            <Box width="100%" display="flex" padding="5px">
-                <Box width="75px" justifyContent="flex-start" padding="5px" borderRadius="5px">
-                    card content
-                    <Button action="goToCard">Use this Card</Button>
-                </Box>
+            <Box width="100%" display="flex" padding="5px" border="1px solid #a9a9aa" justifyContent="flex-start" flexWrap="wrap">
+                
+            ${ metadata.trelloLists && 
+                metadata.trelloLists.map(list => { 
+                    return htm`<Box width="150px" padding="5px" margin="5px" borderRadius="5px" border="1px solid #a9a9aa">
+                   <Container>
+                        ${list.name}
+                        <Button width="5%" height="5px" fontSize="8px" value="test" action="open-list-${encodeURIComponent(`open-list-${list.id}`)}"> Use this List </Button>
+                   </Container>
+                </Box>`
+                })
+            }
             </Box>
         </Page>
     `;
 }
 
-mapBoards = board => {
+const load_list = (zeitUser, metadata, trelloCards ) => {
     return htm`
-        <Option value="${board.id}" caption="${board.name}" />
-    `
-  }
+    <Page >
+        <Box height="600px" width="100%" border="1px solid #a9a9aa" padding="5px" height="50px" display="flex" justifyContent="flex-start" border-radius="5px" alignItems="center"> 
+            <Container display="flex" height="100%" align-items="center">
+                Hello, ${zeitUser.user.username}
+            </Container>
+        </Box>
+
+        <Box width="100%" display="flex" padding="5px" margin="5px" border="1px solid #a9a9aa" justifyContent="space-between" flexWrap="wrap">
+            <Box width="50%" display="flex" flex-direction="column">
+            ${ trelloCards && 
+                trelloCards.map(card => {
+                    return htm`<Box width="100%" border="1px solid #a9a9aa" margin="5px 0 0 0" borderRadius="5px" padding="3px">
+                        <P>${card.name}</P>
+                    </Box>` 
+                })
+            }
+            </Box>
+            <Box width="50%" display="flex">
+                ACTION PANEL
+            </Box>
+        </Box>
+    </Page>
+    `;
+}
+
 
 module.exports = {
-    authenticate, load_content
+    authenticate, load_content, load_list
 }
